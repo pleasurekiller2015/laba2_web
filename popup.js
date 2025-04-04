@@ -73,8 +73,7 @@ document.addEventListener("DOMContentLoaded", function () {
     
         document.getElementById("acceptSubscribe").addEventListener("click", function () {
             localStorage.setItem("subscribed", "true");
-            hideSubscribeBox();
-            alert("Дякуємо за підписку!");
+            showSuccessMessage();
         });
     
         document.getElementById("declineSubscribe").addEventListener("click", hideSubscribeBox);
@@ -85,81 +84,101 @@ document.addEventListener("DOMContentLoaded", function () {
         if (box) box.remove();
     }
 
-    // Показ реклами після прокрутки або через 10 секунд
-    let adTriggered = false;
-    window.addEventListener("scroll", function () {
-        if (!adTriggered && window.scrollY > 300) {
-            showAdModal();
-            adTriggered = true;
+    function showSuccessMessage() {
+        let subscribeBox = document.getElementById("subscribeBox");
+        if (subscribeBox) {
+            subscribeBox.innerHTML = `
+                <p>Дякуємо за підписку!</p>
+            `;
+            setTimeout(hideSubscribeBox, 2000); // Приховати повідомлення через 2 секунди
         }
-    });
+    }
 
-    setTimeout(() => {
-        if (!adTriggered) {
-            showAdModal();
-        }
-    }, 10000);
-
+    // Функція для показу реклами
     function showAdModal() {
         let randomProduct = products[Math.floor(Math.random() * products.length)];
 
         let adModal = document.createElement("div");
         adModal.id = "adModal";
         adModal.innerHTML = `
-            <p>🎉 Спеціальна пропозиція! Купуйте зараз зі знижкою!</p>
-            <a href="${randomProduct.link}" class="product-link">
-                <img src="${randomProduct.image}" alt="${randomProduct.title}">
-                <h3>${randomProduct.title}</h3>
-                <p class="price">${randomProduct.price}</p>
-            </a>
-            <button id="closeAdBtn" disabled>Закрити (<span id="timer">5</span> сек)</button>
+            <div id="overlay"></div>
+            <div id="adContent">
+                <p>🎉 Спеціальна пропозиція! Купуйте зараз зі знижкою!</p>
+                <a href="${randomProduct.link}" class="product-link">
+                    <img src="${randomProduct.image}" alt="${randomProduct.title}">
+                    <h3>${randomProduct.title}</h3>
+                    <p class="price">${randomProduct.price}</p>
+                </a>
+                <button id="closeAdBtn" disabled>Закрити (<span id="timer">5</span> сек)</button>
+            </div>
         `;
         document.body.appendChild(adModal);
 
         let style = document.createElement("style");
         style.innerHTML = `
             #adModal {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 320px; /* Зменшуємо ширину */
-    background: white;
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.3);
-    text-align: center;
-    z-index: 1001;
-    font-family: Arial, sans-serif;
-}
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                z-index: 1001;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                background: rgba(0, 0, 0, 0.7); /* затемнення */
+            }
 
-#adModal img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 8px;
-}
+            #overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5); /* затемнення */
+                z-index: -1;
+            }
 
-#adModal h3 {
-    font-size: 18px;
-    margin: 10px 0 5px;
-}
+            #adContent {
+                background: white;
+                padding: 30px;
+                border-radius: 10px;
+                box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.3);
+                width: 80%; /* збільшили ширину */
+                max-width: 800px; /* максимальна ширина */
+                text-align: center;
+                font-family: Arial, sans-serif;
+            }
 
-#adModal p.price {
-    font-size: 16px;
-    font-weight: bold;
-    color: #007bff;
-}
+            #adContent img {
+                max-width: 100%;
+                height: auto;
+                border-radius: 8px;
+            }
+
+            #adContent h3 {
+                font-size: 22px;
+                margin: 10px 0 5px;
+            }
+
+            #adContent p.price {
+                font-size: 18px;
+                font-weight: bold;
+                color: #007bff;
+            }
 
             #closeAdBtn {
                 background: red;
                 color: white;
                 border: none;
-                padding: 10px 15px;
+                padding: 15px 25px;
                 border-radius: 5px;
                 cursor: pointer;
-                font-size: 14px;
+                font-size: 16px;
                 font-weight: bold;
+                margin-top: 20px;
             }
+
             #closeAdBtn:disabled {
                 background: lightgray;
                 cursor: not-allowed;
@@ -180,5 +199,34 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("closeAdBtn").addEventListener("click", function () {
             document.getElementById("adModal").remove();
         });
+
+        // Заборонити прокручування під час показу реклами
+        document.body.style.overflow = "hidden";
+        document.getElementById("overlay").addEventListener("click", closeAdModal);
     }
+
+    function closeAdModal() {
+        document.getElementById("adModal").remove();
+        document.body.style.overflow = "auto"; // Повертаємо можливість прокручування
+    }
+
+    // Функція для перевірки, чи можна показати рекламу
+    function checkAdDisplay() {
+        const lastAdTime = localStorage.getItem("lastAdTime");
+        const currentTime = Date.now();
+
+        if (!lastAdTime || currentTime - lastAdTime >= 600000) { // 600000 мс = 10 хв
+            showAdModal();
+            localStorage.setItem("lastAdTime", currentTime); // Зберігаємо час показу
+        }
+    }
+
+    // Перевіряємо через 10 секунд або при прокрутці
+    setTimeout(checkAdDisplay, 10000);
+
+    window.addEventListener("scroll", function () {
+        if (window.scrollY > 300) {
+            checkAdDisplay();
+        }
+    });
 });
