@@ -5,7 +5,6 @@ document.addEventListener("DOMContentLoaded", function () {
         { id: "product-3", title: "Планшет Morf", image: "images/product3.jpg", price: "₴ 5,999", link: "tablet.html" }
     ];
 
-    // Показ вікна підписки
     if (!localStorage.getItem("subscribed")) {
         setTimeout(showSubscribeBox, 3000);
     }
@@ -90,11 +89,10 @@ document.addEventListener("DOMContentLoaded", function () {
             subscribeBox.innerHTML = `
                 <p>Дякуємо за підписку!</p>
             `;
-            setTimeout(hideSubscribeBox, 2000); // Приховати повідомлення через 2 секунди
+            setTimeout(hideSubscribeBox, 2000);
         }
     }
 
-    // Функція для показу реклами
     function showAdModal() {
         let randomProduct = products[Math.floor(Math.random() * products.length)];
 
@@ -126,7 +124,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 display: flex;
                 justify-content: center;
                 align-items: center;
-                background: rgba(0, 0, 0, 0.7); /* затемнення */
+                background: rgba(0, 0, 0, 0.7);
             }
 
             #overlay {
@@ -135,7 +133,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 left: 0;
                 right: 0;
                 bottom: 0;
-                background: rgba(0, 0, 0, 0.5); /* затемнення */
+                background: rgba(0, 0, 0, 0.5);
                 z-index: -1;
             }
 
@@ -144,16 +142,22 @@ document.addEventListener("DOMContentLoaded", function () {
                 padding: 30px;
                 border-radius: 10px;
                 box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.3);
-                width: 80%; /* збільшили ширину */
-                max-width: 800px; /* максимальна ширина */
+                width: 90%;
+                max-width: 700px;
+                max-height: 90vh;
+                overflow-y: auto;
                 text-align: center;
                 font-family: Arial, sans-serif;
+                position: relative;
             }
 
             #adContent img {
                 max-width: 100%;
+                max-height: 300px;
+                object-fit: contain;
                 height: auto;
                 border-radius: 8px;
+                margin-top: 10px;
             }
 
             #adContent h3 {
@@ -177,6 +181,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 font-size: 16px;
                 font-weight: bold;
                 margin-top: 20px;
+                position: sticky;
+                bottom: 0;
+                z-index: 10;
             }
 
             #closeAdBtn:disabled {
@@ -197,31 +204,28 @@ document.addEventListener("DOMContentLoaded", function () {
         }, 1000);
 
         document.getElementById("closeAdBtn").addEventListener("click", function () {
-            document.getElementById("adModal").remove();
+            closeAdModal();
         });
 
-        // Заборонити прокручування під час показу реклами
         document.body.style.overflow = "hidden";
         document.getElementById("overlay").addEventListener("click", closeAdModal);
     }
 
     function closeAdModal() {
         document.getElementById("adModal").remove();
-        document.body.style.overflow = "auto"; // Повертаємо можливість прокручування
+        document.body.style.overflow = "auto";
     }
 
-    // Функція для перевірки, чи можна показати рекламу
     function checkAdDisplay() {
         const lastAdTime = localStorage.getItem("lastAdTime");
         const currentTime = Date.now();
 
-        if (!lastAdTime || currentTime - lastAdTime >= 600000) { // 600000 мс = 10 хв
+        if (!lastAdTime || currentTime - lastAdTime >= 600000) {
             showAdModal();
-            localStorage.setItem("lastAdTime", currentTime); // Зберігаємо час показу
+            localStorage.setItem("lastAdTime", currentTime);
         }
     }
 
-    // Перевіряємо через 10 секунд або при прокрутці
     setTimeout(checkAdDisplay, 10000);
 
     window.addEventListener("scroll", function () {

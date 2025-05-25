@@ -219,19 +219,7 @@ function removeCartItem(productName, productPrice) {
 }
 
 
-document.querySelectorAll('.add-to-cart').forEach(button => {
-    button.addEventListener('click', () => {
-        const productCard = button.closest('.product-card');
-        const productName = productCard.querySelector('h3').innerText;
-        const productPrice = parseFloat(productCard.querySelector('.price').innerText.replace('₴', '').replace(',', ''));
 
-        addCartItem(productName, productPrice);
-
-        const cart = JSON.parse(localStorage.getItem('cart')) || [];
-        cart.push({ name: productName, price: productPrice });
-        localStorage.setItem('cart', JSON.stringify(cart));
-    });
-});
 const buyButton = document.querySelector('.buy-button');
 if (buyButton) {
     buyButton.addEventListener('click', () => {
@@ -281,6 +269,25 @@ window.onclick = function(event) {
         closeCart();
     }
 };
+function updateCartUI() {
+    const cartContainer = document.getElementById('cart-items');
+    if (!cartContainer) return;
+
+    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+    cartContainer.innerHTML = '';
+
+    cart.forEach(item => {
+        const cartItem = document.createElement('div');
+        cartItem.className = 'cart-item';
+        cartItem.innerText = `${item.name} — ₴${item.price}`;
+        cartContainer.appendChild(cartItem);
+    });
+}
+// всередині initCartButtons після додавання товару
+if (typeof updateCartUI === 'function') {
+    updateCartUI();
+}
+
 
 document.getElementById('searchButton').addEventListener('click', function() {
     const searchTerm = document.getElementById('searchPlaceholder').value.toLowerCase();
